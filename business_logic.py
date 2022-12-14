@@ -10,8 +10,8 @@ def displayStoredData(id=-1):
     if(id<0):
         id = storage.getRandomData()
     productInfo = storage.retreiveData(id)
-    contours, diff_box, mask, filled_after = state_processor.fetchCountoursAndMask(productInfo["diff"], productInfo["before"],productInfo["after"])
-    state_processor.displayImages(productInfo["before"],productInfo["after"], productInfo["diff"],contours, diff_box, mask, filled_after)
+    contours, diff_box, mask, filled_after,after_with_bound, before_with_bound = state_processor.fetchCountoursAndMask(productInfo["diff"], productInfo["before"],productInfo["after"])
+    state_processor.displayImages(before_with_bound,after_with_bound, productInfo["diff"],contours, diff_box, mask, filled_after)
     
 ## Function will be used to fetch product details from a barcode or manually fed serial no.
 ## For demo purposes we are generating a random serial number as product identity
@@ -33,7 +33,7 @@ def createProductEntry(serialNo, prevState='assets/n-1_state.jpg', currentState=
 
     ## comparing both images and saving relevant diff info
     before, after, diff, score = state_processor.compareImages(prevState,currentState)
-    contours, diff_box, mask, filled_after = state_processor.fetchCountoursAndMask(diff, before,after)
+    contours, diff_box, mask, filled_after,after_with_bound, before_with_bound = state_processor.fetchCountoursAndMask(diff, before,after)
     productData = dict()
     
     ## For now we are storing actual image information too for demo purposes 
@@ -48,9 +48,11 @@ def createProductEntry(serialNo, prevState='assets/n-1_state.jpg', currentState=
     storage.storeData(serialNo,productData)
 
 def performReconciliation(id,reconciliationImagePath='assets/reconciliation.jpg'):
+    print("Starting object reconciliation")
     productInfo = storage.retreiveData(id)
     reconciliationImage = cv2.imread(reconciliationImagePath)
     score = regional_diff_checker.compareImages(productInfo["after"],reconciliationImage,productInfo["mask"])
+    print("Reconciliation action report:")
     if(score>0.9):
         reconcileObject(id)
     else:

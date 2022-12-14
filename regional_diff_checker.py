@@ -7,8 +7,11 @@ def compareImages(objectImage,reconciliationImage, mask):
     after = reconciliationImage
     maskedBefore=cv2.bitwise_and(before,mask)
     maskedAfter=cv2.bitwise_and(after,mask)
-    before,after,diff, score = state_processor.compareImages(maskedBefore,maskedAfter)
+    beforeImage,afterImage,diff, score = state_processor.compareImages(maskedBefore,maskedAfter)
     ## good confidence score on image similarity index
+    cv2.destroyAllWindows()
+    cv2.imshow('Object Image during object storage', before)
+    cv2.imshow('Reconciliation image (realtime)', after)
     cv2.imshow('Object Mask', maskedBefore)
     cv2.imshow('Reconciliation image mask', maskedAfter)
     cv2.waitKey()

@@ -2,6 +2,7 @@ from skimage.metrics import structural_similarity
 import cv2
 import numpy as np
 
+## Function to compare images and get similarity index
 def compareImages(prevStateImage,currentStateImage):
     before = prevStateImage
     after = currentStateImage
@@ -26,6 +27,8 @@ def compareImages(prevStateImage,currentStateImage):
 def fetchCountoursAndMask(diff, before, after):
     # Threshold the difference image, followed by finding contours to
     # obtain the regions of the two input images that differ
+    after=after.copy()
+    before=before.copy()
     thresh = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
     contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     mask = np.zeros(before.shape, dtype='uint8')
@@ -42,8 +45,9 @@ def fetchCountoursAndMask(diff, before, after):
             cv2.rectangle(diff_box, (x, y), (x + w, y + h), (36,255,12), 2)
             cv2.drawContours(mask, [c], 0, (255,255,255), -1)
             cv2.drawContours(filled_after, [c], 0, (0,255,0), -1 )
-
-    return contours, diff_box, mask, filled_after
+    after_with_bound=after
+    before_with_bound=before
+    return contours, diff_box, mask, filled_after, after_with_bound, before_with_bound
 
 ## Displays images for demo purpose
 def displayImages(before,after,diff,contours, diff_box, mask, filled_after):
@@ -61,8 +65,8 @@ def test():
     before = cv2.imread('assets/n-1_state.jpg')
     after = cv2.imread('assets/n_state.jpg')
     before,after,diff, score=compareImages(before,after)
-    contours, diff_box, mask, filled_after = fetchCountoursAndMask(diff, before, after)
-    # displayImages(before,after,diff,contours, diff_box, mask, filled_after)
+    contours, diff_box, mask, filled_after,after_with_bound, before_with_bound = fetchCountoursAndMask(diff, before, after)
+    displayImages(before_with_bound,after_with_bound,diff,contours, diff_box, mask, filled_after)
     return before,after,diff,contours, diff_box, mask, filled_after
 
 

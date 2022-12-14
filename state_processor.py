@@ -23,3 +23,46 @@ def compareImages(prevStateImage,currentStateImage):
     
     return before,after,diff, score
 
+def fetchCountoursAndMask(diff, before, after):
+    # Threshold the difference image, followed by finding contours to
+    # obtain the regions of the two input images that differ
+    thresh = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    mask = np.zeros(before.shape, dtype='uint8')
+    diff_box = cv2.merge([diff, diff, diff])
+    contours = contours[0] if len(contours) == 2 else contours[1]
+    filled_after = after.copy()
+
+    for c in contours:
+        area = cv2.contourArea(c)
+        if area > 40:
+            x,y,w,h = cv2.boundingRect(c)
+            cv2.rectangle(before, (x, y), (x + w, y + h), (36,255,12), 2)
+            cv2.rectangle(after, (x, y), (x + w, y + h), (36,255,12), 2)
+            cv2.rectangle(diff_box, (x, y), (x + w, y + h), (36,255,12), 2)
+            cv2.drawContours(mask, [c], 0, (255,255,255), -1)
+            cv2.drawContours(filled_after, [c], 0, (0,255,0), -1 )
+
+    return contours, diff_box, mask, filled_after
+
+## Displays images for demo purpose
+def displayImages(before,after,diff,contours, diff_box, mask, filled_after):
+    
+    cv2.imshow('n-1 th state', before)
+    cv2.imshow('n th state', after)
+    cv2.imshow('Image_diff', diff)
+    cv2.imshow('Image_diff_box', diff_box)
+    cv2.imshow('Object mask', mask)
+    cv2.imshow('filled after', filled_after)
+    cv2.waitKey()
+
+def test():        
+    # Load images
+    before = cv2.imread('assets/n-1_state.jpg')
+    after = cv2.imread('assets/n_state.jpg')
+    before,after,diff, score=compareImages(before,after)
+    contours, diff_box, mask, filled_after = fetchCountoursAndMask(diff, before, after)
+    # displayImages(before,after,diff,contours, diff_box, mask, filled_after)
+    return before,after,diff,contours, diff_box, mask, filled_after
+
+

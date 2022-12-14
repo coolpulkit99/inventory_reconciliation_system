@@ -47,3 +47,24 @@ def createProductEntry(serialNo, prevState='assets/n-1_state.jpg', currentState=
     print("Storing object location info")
     storage.storeData(serialNo,productData)
 
+def performReconciliation(id,reconciliationImagePath='assets/reconciliation.jpg'):
+    productInfo = storage.retreiveData(id)
+    reconciliationImage = cv2.imread(reconciliationImagePath)
+    score = regional_diff_checker.compareImages(productInfo["after"],reconciliationImage,productInfo["mask"])
+    if(score>0.9):
+        reconcileObject(id)
+    else:
+        markObjectAbsent(id)
+
+## Logic to mark object as reconciled goes here
+## could be a db update or inventory checklist update
+def reconcileObject(id):
+    print("Object id:"+ str(id) +" is reconciled")
+
+## Logic to mark object as absent goes here
+## could be an alert to the handler and call for human intervention
+def markObjectAbsent(id):
+    print("Object id:"+ str(id) +" is not found in the rack")
+
+
+
